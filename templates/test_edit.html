@@ -1,0 +1,36 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Редактировать тест {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/new_test.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+{{ error }}
+<div class="new-test-content">
+    {% if messages %}
+        <div class="errors-container">
+            {% for message in messages %}
+                <p class="error-message">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="new-test-wrapper">
+        <form class="new-test-from" action="" method="post">
+            {% csrf_token %}
+            <label>Название теста</label><br>
+            <input type="text" name="test-name" value="{{ test.test_name }}"><br>
+            <label>Описание теста</label><br>
+            <textarea name="test-description">{{ test.test_description }}</textarea><br>
+            <label>Лимит времени</label><br>
+            <input type="text" name="time-limit" value="{{ test.time_limit }}"><br>
+            <label>% правильных ответов</label><br>
+            <input type="text" name="percentage-to-pass" value="{{ test.percentage_to_pass }}"><br><br>
+
+            <button class="submit-btn" type="submit">Сохранить изменения</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

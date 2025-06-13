@@ -1,0 +1,87 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} {{ question.question_text }} {% endblock %}
+
+{% block styles %}
+<link href="{% static '/css/question.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html">
+{% endblock styles %}
+
+{% block body %}
+<div class="question-content">
+    <div class="question-wrapper">
+        <div class="question-entry-wrapper">
+            {{ question.question_text }}<br>
+            {% for file in media_files %}
+                {% if file.file_type == 'img' %}
+                    <img class="media" src="{{ file.file.url }}"><br>
+                {% elif file.file_type == 'mp4' %}
+                    <video class="media" id="video" src="{{ file.file.url }}" controls></video>
+                {% elif file.file_type == 'mp3' %}
+                    <audio class="media" id="audio" src="{{ file.file.url }}" controls></audio>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="answers-wrapper">
+            <form class="user-answer" method="post">
+                {% csrf_token %}
+                <div class="form-answers-wrapper">
+                    {% for answer in answers %}
+                        {% if question.question_type == 'choose_one' %}
+                            <label>{{ answer.answer_text }}</label>
+                            <input type="radio" name="user-answer" value="{{ answer.id }}" checked>
+                        {% elif question.question_type == 'pairs' %}
+                            <label>{{ answer.left_part }}</label>
+                            <select name="{{ answer.id }}">
+                                <option>Выберите вариант</option>
+                                {% for right_part in right_parts %}
+                                    <option value="{{ right_part }}">{{ right_part }}</option>
+                                {% endfor %}
+                            </select>
+                        {% elif question.question_type == 'open_answer' %}
+                            <label>Ваш ответ:</label>
+                            <input type="text" name="user-answer">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <button type="button" id="next-btn">Проверить</button>
+            </form>
+        </div>
+        <div id="right-answers"></div>
+    </div>
+</div>
+<script>
+    const questionType = '{{ question.question_type }}';
+
+    {% if question.question_type == 'choose_one' %}
+        const rightAnswers = [
+            {% for answer in answers %}
+                {% if answer.is_correct %}
+                    '{{ answer.answer_text }}'
+                {% endif %}
+            {% endfor %}
+        ]
+
+    {% elif question.question_type == 'pairs' %}
+        const rightAnswers = [
+            {% for answer in answers %}
+                ['{{ answer.left_part }}', '{{ answer.right_part }}'],
+            {% endfor %}
+        ]
+
+    {% elif question.question_type == 'open_answer' %}
+        const rightAnswers = [
+            {% for answer in answers %}
+                '{{ answer.correct_answer }}'
+            {% endfor %}
+        ]
+    {% endif %}
+
+    const audio = document.getElementById('audio');
+    const video = document.getElementById('video');
+    audio.volume = 0.2;
+    video.volume = 0.2;
+
+</script>
+<script src="{% static '/scripts/practice.js' %}"></script>
+{% endblock %}

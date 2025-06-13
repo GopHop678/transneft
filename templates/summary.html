@@ -1,0 +1,90 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Сводный отчет {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/summary.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="summary-content">
+    <form class="filter" action="" method="get">
+        <div class="filter-row">
+            <label>Тест</label>
+            <select name="test">
+                <option value="">Выберите тест</option>
+                {% for test in tests %}
+                    <option value="{{ test.id }}">{{ test.test_name|truncatewords:6 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-row">
+            <label for="departament">Поиск по подразделению</label>
+            <select id="departament" name="departament">
+                <option value="">Укажите подразделение</option>
+                {% for departament in departments %}
+                    <option value="{{ departament.id }}">{{ departament.departament_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-row">
+            <label for="job_title">Поиск по должности</label>
+            <input type="text" id="job_title" name="job_title" placeholder="Должность содержит..."><br>
+        </div>
+
+        <div class="filter-row">
+            <label>Начало периода</label>
+            <input type="date" name="start-date">
+            <label>Конец периода</label>
+            <input type="date" name="end-date">
+        </div>
+
+        <div class="filter-row">
+            <input class="submit" type="submit" value="Применить">
+        </div>
+        </form>
+        {% if messages %}
+            <div class="errors-container">
+                {% for message in messages %}
+                    <p class="error-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    <div class="summary-table-wrapper">
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Подразделение</th>
+                    <th>Должность/Роль</th>
+                    <th>Тест</th>
+                    <th>Дата прохождения</th>
+                    <th>Результат</th>
+                    <th>Прошел</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr onclick="window.location.href='/reports/protocols/{{ result.test.id }}/{{ result.id }}';"
+                    style="background: {% cycle 'lightgrey' 'white' %}">
+                    <td>{{ result.worker.full_name }}</td>
+                    <td>{{ result.worker.departament.departament_name }}</td>
+                    <td>{{ result.worker.job_title }}</td>
+                    <td>{{ result.test.test_name }}</td>
+                    <td>
+{{ result.finish_date.day }}.{{ result.finish_date.month }}.{{ result.finish_date.year }}
+                    </td>
+                    <td>{{ result.result }}</td>
+                    <td>{% if result.is_passed %}Да{% else %}Нет{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+{% endblock %}

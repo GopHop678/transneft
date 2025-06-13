@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock title %} </title>
+    {% load static %}
+    <link href="{% static '/css/header.css' %}" rel="stylesheet">
+    {% block styles %}
+    {% endblock styles %}
+</head>
+<body>
+<nav class="menu-block">
+    <div class="first-group">
+        <div><a href="/">Главная</a></div>
+        <div><a href="/testing">Тестирование</a></div>
+
+        {% if user.worker.role == 'curator' or user.worker.role == 'admin' %}
+            <div><a href="/reports">Отчетность</a></div>
+            <div><a href="/testing/new">Создать тест</a></div>
+        {% endif %}
+
+        {% if  user.worker.role == 'admin' %}
+            <div><a href="/admin">Админ-панель</a></div>
+        {% endif %}
+    </div>
+    <div class="second-group">
+        {% if user.is_authenticated %}
+            <div class="logout"><a href="/logout">Выйти</a></div>
+        {% else %}
+            <div class="login"><a href="/login">Вход</a></div>
+        {% endif %}
+    </div>
+</nav>
+<div class="content">
+    {% block body %}
+    {% endblock body %}
+</div>
+</body>
+</html>

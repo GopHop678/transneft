@@ -1,0 +1,24 @@
+.test-members-content {
+    display: grid;
+    place-items: center;
+
+    .members-filter-form {
+        text-align: center;
+        width: 100%;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        margin-bottom: 10px;
+        border-bottom: solid black 1px;
+        background: rgba(194, 199, 200, 1);
+    }
+
+    .members-table {
+        margin-top: 20px;
+        border-spacing: 0px;
+        border: solid grey 1px;
+
+        th, td {
+            border: solid grey 1px;
+        }
+    }
+}

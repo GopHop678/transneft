@@ -1,0 +1,65 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Добавить участников теста {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/test_members.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="test-members-content">
+
+    <form class="members-filter-form" method="get">
+        <label for="name">Поиск по ФИО</label>
+        <input type="text" id="name" name="name" placeholder="ФИО содержит...">
+
+        <label for="departament">Поиск по подразделению</label>
+        <select id="departament" name="departament">
+            <option value="">Укажите подразделение</option>
+            {% for departament in departments %}
+                <option value="{{ departament.id }}">{{ departament.departament_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="job_title">Поиск по должности</label>
+        <input type="text" id="job_title" name="job_title" placeholder="Должность содержит...">
+
+        <input type="submit" value="Поиск">
+    </form>
+
+
+
+    <table class="members-table">
+        <thead>
+            <tr>
+                <th>ФИО</th>
+                <th>Отдел</th>
+                <th>Должность</th>
+                <th>Участие</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for worker in workers %}
+                <tr style="background: {% cycle 'lightgrey' 'white' %}">
+                    <td>{{ worker.full_name }}</td>
+                    <td >{{ worker.departament }}</td>
+                    <td>{{ worker.job_title }}</td>
+                    <td class="subscription">
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="worker_id" value="{{ worker.id }}" />
+                            {% if worker.is_test_member %}
+                                <button name="action" value="remove">Убрать</button>
+                            {% else %}
+                                <button name="action" value="add">Добавить</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

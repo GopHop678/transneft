@@ -1,0 +1,50 @@
+.test-result-content {
+    display: grid;
+    place-items: center;
+
+    .result-wrapper {
+        width: 700px;
+        margin: 30px 0 30px;
+        padding: 30px 0px 30px;
+        border: solid rgba(0, 0, 0, 0.6) 1px;
+        border-radius: 45px;
+        box-shadow: 0px 0px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .result-summary {
+        font-size: 18px;
+        padding: 15px 15px 0;
+
+        .worker, .test, .departament {
+            font-size: 21px;
+        }
+    }
+
+    .answers-container {
+        font-size: 20px;
+
+        .question-wrapper {
+            padding: 15px 15px 0;
+            border-top: solid rgba(0, 0, 0, 1) 1px;
+
+            .pair {
+                margin: 0px;
+            }
+            .correct-answer {
+                background: rgba(255, 253, 150, 1);
+                padding: 10px;
+            }
+        }
+    }
+
+}
+
+a {
+    text-decoration: underline;
+    color: black;
+}
+
+a:hover {
+    text-decoration: none;
+    color: red;
+}

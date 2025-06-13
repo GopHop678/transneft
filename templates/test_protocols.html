@@ -1,0 +1,29 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Доступные протоколы {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/test_protocols.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="test-protocols-content">
+    <p class="intro">Сотрудники, прошедшие данное тестирование</p>
+    <div class="test-protocols-wrapper">
+        {% for protocol in protocols %}
+            <div class="worker-protocol">
+                <a href="/reports/protocols/{{ protocol.test.id }}/{{ protocol.id }}">
+                    <p class="worker">Сотрудник: {{ protocol.worker.full_name }}</p>
+                    <p class="departament">Подразделение: {{ protocol.worker.departament }}</p>
+                    <span class="result">Набрано баллов: {{ protocol.result }}</span><br>
+                    <span>Дата прохождения:
+{{ protocol.finish_date.date.day }}.{{ protocol.finish_date.date.month }}.{{ protocol.finish_date.date.year }}
+                    </span><br>
+                    <span>Тест пройден: {% if protocol.is_passed %}Да{% else %}Нет{% endif %}</span><br>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

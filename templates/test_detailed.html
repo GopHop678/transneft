@@ -1,0 +1,51 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} {{ test.test_name }} {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/test.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="test-content">
+    <div class="test-wrapper">
+        <div class="test-info">
+        <p>Название: {{ test.test_name }}</p>
+        <p>Описание: {{ test.test_description }}</p>
+        <span>Куратор: {{ test.curator }}</span><br>
+        <span>Время на тест: {{ test.time_limit }} минут</span><br>
+        <span>Правильных ответов для прохождения: {{ test.percentage_to_pass }}%</span><br>
+        <div class="start-test-container">
+            <a href="/testing/{{ test.id }}/start" class="start-test-btn">Начать тест</a>
+            <a href="/testing/{{ test.id }}/practice" class="new-question-btn">Практиковаться</a>
+        </div>
+        {% if user.worker.role == 'admin' or user.worker == test.curator %}
+            <div class="manage-test-container">
+                <a href="/testing/{{ test.id }}/new_question" class="new-question-btn">Добавить вопрос</a>
+                <a href="/testing/{{ test.id }}/members" class="test-members-btn">Добавить участников</a>
+                <a href="/testing/{{ test.id }}/edit" class="test-members-btn">Редактировать тест</a>
+                <a href="/testing/{{ test.id }}/delete" class="test-members-btn">Удалить тест</a>
+            </div>
+        {% endif %}
+        </div>
+
+        {% if user.worker.role == 'admin' or user.worker == test.curator %}
+            <div class="questions-wrapper">
+                {% for question in questions %}
+                    <div class="question-wrapper">
+                        <a class="question" href="/testing/{{ question.test.id }}/{{ question.id }}/edit">
+                            {{ question.question_text }} <br>
+                        </a>
+                        {% if user.worker.role == 'admin' or user.worker == test.curator %}
+                            <a href="/testing/{{ test.id }}/{{ question.id }}/delete" class="delete-question-btn"><button>
+                                X
+                            </button></a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

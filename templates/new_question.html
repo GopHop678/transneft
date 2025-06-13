@@ -1,0 +1,54 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Добавление вопроса {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/new_question.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="new-question-content">
+    {% if messages %}
+        <div class="errors-container">
+            {% for message in messages %}
+                <p class="error-message">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="new-question-wrapper">
+        <p>Создание вопроса для теста</p>
+        <div id="constructor-container">
+            <form class="question-form" action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label>Текст вопроса</label><br>
+                <textarea name="question-text"></textarea><br>
+
+                <label>Добавьте фото или видео к вопросу</label><br>
+                <input class="file-input" type="file" name="file"
+                       accept="image/png, image/jpeg, image/gif, video/*, audio/*" multiple><br>
+
+                <label>Тип вопроса</label><br>
+                <select name="question-type" id="question-type-select">
+                    <option value="">Выберите тип вопроса</option>
+                    {% for question_type in question_types %}
+                    <option value="{{ question_type.0 }}">{{ question_type.1 }}</option>
+                    {% endfor %}
+                </select><br><br>
+
+                <div id="answers-container"></div>
+
+                <button class="submit-btn" type="submit">Создать вопрос</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const questionTypes =
+    [{% for question_type in question_types %}
+        '{{ question_type.0 }}',
+    {% endfor %}];
+</script>
+<script src="{% static '/scripts/new_question.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Анализ {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/analysis_page.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="analysis-content">
+    <form class="filter" action="" method="get">
+        <div class="filter-row">
+            <label>Тест</label>
+            <select name="test">
+                {% for test in tests %}
+                    <option value="{{ test.id }}" {% if test == chosen_test %} selected {% endif %}>
+                        {{ test.test_name|truncatewords:6 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-row">
+            <label>Подразделение</label>
+            <select name="departament">
+                <option value="">Все подразделения</option>
+                {% for departament in departments %}
+                    <option value="{{ departament.id }}">{{ departament.departament_name }}</option>
+                {% endfor %}
+            </select><br>
+        </div>
+
+        <div class="filter-row">
+            <label>Начало периода</label>
+            <input type="date" name="start-date">
+            <label>Конец периода</label>
+            <input type="date" name="end-date">
+        </div>
+
+        <div class="filter-row">
+            <input class="submit" type="submit" value="Применить">
+        </div>
+        </form>
+        {% if messages %}
+            <div class="errors-container">
+                {% for message in messages %}
+                    <p class="error-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    <div class="diagram">
+        <canvas id="chart" width="400px" height="200px"></canvas>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+<script>
+    {% if avg_scores %}
+        // means no departament is chosen
+        const canvasLabel = 'Средний балл по отделам'
+        const hoverTooltip = 'Средний балл'
+        const yLegend = 'Средний балл'
+        const xLegend = 'Отделы'
+
+        const xs =
+            [{% for departament in departments %}
+                '{{ departament.departament_name }}',
+            {% endfor %}];
+        const ys =
+            [{% for avg_score in avg_scores %}
+                {{ avg_score }},
+            {% endfor %}];
+
+    {% elif results %}
+        // means some departament is chosen
+        const canvasLabel = 'Баллы сотрудников за выбранный тест'
+        const hoverTooltip = 'Балл сотрудника'
+        const yLegend = 'Балл сотрудника'
+        const xLegend = 'Сотрудники'
+
+        const xs =
+            [{% for result in results %}
+                '{{ result.worker.full_name }}',
+            {% endfor %}];
+        const ys =
+            [{% for result in results %}
+                {{ result.result }},
+            {% endfor %}];
+    {% endif %}
+
+
+
+    const ctx = document.getElementById('chart').getContext('2d');
+    const performanceChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: xs,
+        datasets: [{
+          label: hoverTooltip,
+          data: ys,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: canvasLabel,
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: {{ y_scale_max }},
+            title: {
+              display: true,
+              text: yLegend,
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: xLegend,
+            }
+          }
+        }
+      }
+    });
+</script>
+{% endblock %}

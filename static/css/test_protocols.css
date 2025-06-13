@@ -1,0 +1,45 @@
+.test-protocols-content {
+    .intro {
+        margin: 1%;
+        font-size: 18px;
+    }
+    .test-protocols-wrapper {
+        margin: 1%;
+        position: relative;
+        display: grid;
+        grid-template-columns: 33.3% 33.3% 33.3%;
+
+        .worker-protocol {
+            margin: 10px;
+            padding-bottom: 20px;
+            border: solid rgba(0, 0, 0, 0.8) 1px;
+            border-radius: 30px;
+            position: relative;
+            background: white;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+
+            a {
+                position: relative;
+                width: 80%;
+                margin: 0 auto;
+                display: block;
+                color: black;
+                text-decoration: none;
+
+                .worker {
+                    font-size: 18px;
+                    margin-bottom: 5px;
+                }
+                .departament {
+                    font-size: 18px;
+                    margin-top: 0;
+                }
+            }
+            a:hover {
+                color: red;
+                text-decoration: none;
+            }
+        }
+    }
+}
+

@@ -1,0 +1,21 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Подтвердить удаление {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/delete_confirmation.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+    <div class="delete-confirmation-content">
+        <div class="form-wrapper">
+            <p>Подтвердить удаление "{{ object }}"?</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn confirm-btn" name="confirm" value="yes">Да</button>
+                <button type="submit" class="btn cancel-btn" name="confirm" value="no">Нет</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

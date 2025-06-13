@@ -1,0 +1,32 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Доступные тесты {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/testing.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="testing-content">
+
+    {% if not tests %}
+        <div class="errors-container">
+            <p class="error-message"> Нет доступных тестов</p>
+        </div>
+    {% endif %}
+
+    <div class="tests-wrapper">
+    {% for test in tests %}
+        <div class="test-wrapper">
+            <a class="test" href="/testing/{{ test.id }}">
+                <div class="text-wrapper">
+                    <p class="test-name">{{ test.test_name }}</p>
+                    <p class="test-curator">От: {{ test.curator }}</p>
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}

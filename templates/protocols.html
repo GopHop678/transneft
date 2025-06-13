@@ -1,0 +1,34 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Выберите тест {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/testing.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="testing-content">
+    <div class="tests-wrapper">
+        {% if messages %}
+            <div class="errors-container">
+                {% for message in messages %}
+                    <p class="error-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+
+    {% for test in tests %}
+        <div class="test-wrapper">
+            <a class="test" href="/reports/protocols/{{ test.id }}">
+                <div class="text-wrapper">
+                    <p class="test-name">{{ test.test_name }}</p>
+                    <p class="test-curator">От: {{ test.curator }}</p>
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}

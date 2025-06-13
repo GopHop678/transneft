@@ -1,0 +1,37 @@
+.delete-confirmation-content {
+    display: grid;
+    place-items: center;
+
+    .form-wrapper {
+        margin: 30px;
+        font-size: 20px;
+        max-width: 400px;
+        border: solid rgba(0, 0, 0, 0.6) 1px;
+        border-radius: 30px;
+        box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.5);
+
+        p {
+            margin: 20px;
+        }
+
+        form {
+            margin: 20px;
+            display:grid;
+            grid-template-columns: 50% 50%;
+
+            .btn {
+                font-size: 17px;
+                margin: 0 10px 0;
+                width: 90%;
+            }
+
+            .confirm-btn {
+                background: rgb(56%, 99%, 69%, 1);
+            }
+
+            .cancel-btn {
+                background: rgb(99%, 56%, 64%, 1);
+            }
+        }
+    }
+}

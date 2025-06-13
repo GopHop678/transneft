@@ -1,0 +1,26 @@
+.login-content {
+    display: grid;
+    place-items: center;
+
+
+    .login-form > * {
+        margin: 8px;
+    }
+    .login-form {
+        margin: 20px;
+        display: grid;
+        place-items: center;
+        border: solid rgba(0, 0, 0, 0.6) 1px;
+        border-radius: 30px;
+        box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.5);
+
+        .error {
+            margin-top: 20px;
+            padding: 5px;
+            border: solid rgba(115, 65, 74, 1) 1px;
+            /*border-radius: 30px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);*/
+            background: pink;
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Вход {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/login.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="login-content">
+    <form class="login-form" method="post">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="error">Неверный логин или пароль</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% csrf_token %}
+        <label>Имя пользователя:</label>
+        <input type="text" name="username" required>
+        <label>Пароль:</label>
+        <input type="password" name="password" required>
+        <input type="submit" value="Войти">
+    </form>
+</div>
+{% endblock %}

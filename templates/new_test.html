@@ -1,0 +1,48 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Новый тест {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/new_test.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="new-test-content">
+    {% if messages %}
+        <div class="errors-container">
+            {% for message in messages %}
+                <p class="error-message">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="new-test-wrapper">
+        <p class="p choose-file">Выберите файл для загрузки</p>
+        <form class="file-input-form" action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input class="file-input" type="file" name="file" accept="text/csv"> <br>
+            <button class="submit-btn" type="submit">Отправить</button>
+        </form>
+
+        <p class="delimiter">Или</p>
+
+        <p class="p construct-test">Составьте тест с помощью конструктора</p>
+        <form class="new-test-from" action="" method="post">
+            {% csrf_token %}
+            <label>Название теста</label><br>
+            <input type="text" name="test-name"><br>
+            <label>Описание теста</label><br>
+            <textarea name="test-description"></textarea><br>
+            <label>Куратор</label><br>
+            <input type="text" name="test-curator" value="{{ user.worker.full_name }}" disabled><br>
+            <label>Лимит времени</label><br>
+            <input type="text" name="time-limit" value="20"><br>
+            <label>% правильных ответов</label><br>
+            <input type="text" name="percentage-to-pass" value="80"><br><br>
+
+            <button class="submit-btn" type="submit">Создать тест</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

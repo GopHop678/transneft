@@ -1,0 +1,65 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Результат сотрудника {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/test_result.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="test-result-content">
+    <div class="result-wrapper">
+        <div class="result-summary">
+            <span class="worker">Тестируемый: {{ user_answers.0.worker.full_name }}</span><br>
+            <span class="departament">Подразделение: {{ user_answers.0.worker.departament }}</span><br>
+            <span class="test">Тест: {{ test.test_name }}</span><br>
+            <span>Набрано баллов: {{ score }} из {{ max_score }}</span><br>
+            <span>Дата прохождения:
+    {{ result.finish_date.day }}.{{ result.finish_date.month }}.{{ result.finish_date.year }}</span><br>
+            <span>Затраченное время: {{ time_spent }}</span><br>
+            <span>Тест пройден: {% if result.is_passed %}Да{% else %}Нет{% endif %}</span><br>
+            <p><a href="{% url 'download_pdf' test.id result.id %}">Скачать отчет в формате PDF</a></p>
+            <br><br>
+            </div>
+        <div class="answers-container">
+            {% for question in questions %}
+                <div class="question-wrapper">
+                    <p class="question_text">{{ question.question_text }}</p>
+
+                    {% for answer in user_answers %}
+                        {% if answer.question == question %}
+
+                            {% if answer.question.question_type == 'choose_one' %}
+                                <p class="user-answer">{{ answer.simple_answer }}</p>
+                            {% elif answer.question.question_type == 'pairs' %}
+                                <p class="pair">{{ answer.left_part }} - {{ answer.right_part }}</p>
+                            {% elif answer.question.question_type == 'open_answer' %}
+                                <p class="user-answer">{{ answer.simple_answer }}</p>
+                            {% endif %}
+
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if question.question_type == 'choose_one' %}
+                        <p class="correct-answer">
+                                    Правильный ответ: {{ question.variants.0.answer_text }}</p>
+
+                    {% elif question.question_type == 'pairs' %}
+                        <p class="correct-answer">
+                            Правильный ответ:<br>
+                            {% for pair in question.pairs %}
+                                    {{ pair.left_part }} - {{ pair.right_part }}.<br>
+                            {% endfor %}
+                        </p>
+
+                    {% elif question.question_type == 'open_answer' %}
+                        <p class="correct-answer">
+                                    Правильный ответ: {{ question.open_answer.0.correct_answer }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

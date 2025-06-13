@@ -1,0 +1,24 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Отчетность {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/report_page.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+    <div class="reports-content">
+        <div class="wrapper">
+            <span>
+                <a href="/reports/protocols">Протоколы</a>
+            </span>
+            <span>
+                <a href="/reports/summary">Сводный отчет</a>
+            </span>
+            <span>
+                <a href="/reports/analysis">Анализ</a>
+            </span>
+        </div>
+    </div>
+{% endblock %}

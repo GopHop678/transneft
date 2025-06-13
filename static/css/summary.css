@@ -1,0 +1,45 @@
+.summary-content {
+    display: grid;
+    place-items: center;
+    text-align: center;
+
+    .filter {
+        text-align: center;
+        padding: 5px;
+        background: rgba(194, 199, 200, 1);
+        display: flex;
+        flex-wrap: wrap;
+        flex: 1 1 auto;
+        gap: 5px 10px;
+        justify-content: center;
+
+        .filter-row {
+            margin: 0px 15px 0px;
+
+            label, input, select {
+                margin: 5px 5px 5px;
+            }
+
+            .submit {
+                background: rgb(56%, 99%, 69%, 1);
+            }
+        }
+    }
+
+    table {
+        border-spacing: 0px;
+        border: solid grey 1px;
+
+        th, td {
+            border: solid grey 1px;
+        }
+
+        tbody {
+            tr:hover {
+                color: red;
+                cursor: pointer;
+            }
+        }
+
+    }
+}
