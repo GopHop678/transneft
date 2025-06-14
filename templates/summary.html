@@ -78,7 +78,7 @@
                     <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
                         {{ result.test.test_name }}</a></td>
                     <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
-{{ result.finish_date.day }}.{{ result.finish_date.month }}.{{ result.finish_date.year }}</a></td>
+                        {{ result.finish_date|date:"d.m.Y" }}</a></td>
                     <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
                         {{ result.result }}</a></td>
                     <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">

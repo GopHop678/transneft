@@ -17,9 +17,7 @@
                     <p class="worker">Сотрудник: {{ protocol.worker.full_name }}</p>
                     <p class="departament">Подразделение: {{ protocol.worker.departament }}</p>
                     <span class="result">Набрано баллов: {{ protocol.result }}</span><br>
-                    <span>Дата прохождения:
-{{ protocol.finish_date.date.day }}.{{ protocol.finish_date.date.month }}.{{ protocol.finish_date.date.year }}
-                    </span><br>
+                    <span>Дата прохождения: {{ protocol.finish_date|date:"d.m.Y" }}</span><br>
                     <span>Тест пройден: {% if protocol.is_passed %}Да{% else %}Нет{% endif %}</span><br>
                 </a>
             </div>

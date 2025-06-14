@@ -15,8 +15,7 @@
             <span class="departament">Подразделение: {{ user_answers.0.worker.departament }}</span><br>
             <span class="test">Тест: {{ test.test_name }}</span><br>
             <span>Набрано баллов: {{ score }} из {{ max_score }}</span><br>
-            <span>Дата прохождения:
-    {{ result.finish_date.day }}.{{ result.finish_date.month }}.{{ result.finish_date.year }}</span><br>
+            <span>Дата прохождения: Дата прохождения: {{ result.finish_date|date:"d.m.Y" }}</span><br>
                 <span>Затраченное время: {{ time_spent }}</span><br>
             <span>Тест пройден: {% if result.is_passed %}Да{% else %}Нет{% endif %}</span><br>
             <br><br>
