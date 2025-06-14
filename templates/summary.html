@@ -68,17 +68,21 @@
             </thead>
             <tbody>
                 {% for result in results %}
-                <tr onclick="window.location.href='/reports/protocols/{{ result.test.id }}/{{ result.id }}';"
-                    style="background: {% cycle 'lightgrey' 'white' %}">
-                    <td>{{ result.worker.full_name }}</td>
-                    <td>{{ result.worker.departament.departament_name }}</td>
-                    <td>{{ result.worker.job_title }}</td>
-                    <td>{{ result.test.test_name }}</td>
-                    <td>
-{{ result.finish_date.day }}.{{ result.finish_date.month }}.{{ result.finish_date.year }}
-                    </td>
-                    <td>{{ result.result }}</td>
-                    <td>{% if result.is_passed %}Да{% else %}Нет{% endif %}</td>
+                <tr style="background: {% cycle 'lightgrey' 'white' %}">
+                    <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
+                        {{ result.worker.full_name }}</a></td>
+                    <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
+                        {{ result.worker.departament.departament_name }}</a></td>
+                    <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
+                        {{ result.worker.job_title }}</a></td>
+                    <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
+                        {{ result.test.test_name }}</a></td>
+                    <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
+{{ result.finish_date.day }}.{{ result.finish_date.month }}.{{ result.finish_date.year }}</a></td>
+                    <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
+                        {{ result.result }}</a></td>
+                    <td><a href="/reports/protocols/{{ result.test.id }}/{{ result.id }}">
+                        {% if result.is_passed %}Да{% else %}Нет{% endif %}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
