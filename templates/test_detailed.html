@@ -13,7 +13,7 @@
         <div class="test-info">
         <p>Название: {{ test.test_name }}</p>
         <p>Описание: {{ test.test_description }}</p>
-        <span>Куратор: {{ test.curator }}</span><br>
+        <span>Куратор: {{ test.curator.full_name }}</span><br>
         <span>Время на тест: {{ test.time_limit }} минут</span><br>
         <span>Правильных ответов для прохождения: {{ test.percentage_to_pass }}%</span><br>
         <div class="start-test-container">
