@@ -16,10 +16,16 @@
         <span>Куратор: {{ test.curator.full_name }}</span><br>
         <span>Время на тест: {{ test.time_limit }} минут</span><br>
         <span>Правильных ответов для прохождения: {{ test.percentage_to_pass }}%</span><br>
+        <span>Количество попыток: {{ test.max_tries }}</span><br>
+        <span>Вопросов в тесте: {{ test.questions_per_attempt }}</span><br>
         <div class="start-test-container">
             <a href="/testing/{{ test.id }}/start" class="start-test-btn">Начать тест</a>
             <a href="/testing/{{ test.id }}/practice" class="new-question-btn">Практиковаться</a>
         </div>
+        {% if results %}
+            <a href="/testing/{{ test.id }}/results" class="previous-attempts">Предыдущие попытки</a>
+        {% endif %}
+
         {% if user.worker.role == 'admin' or user.worker == test.curator %}
             <div class="manage-test-container">
                 <a href="/testing/{{ test.id }}/new_question" class="new-question-btn">Добавить вопрос</a>

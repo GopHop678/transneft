@@ -27,7 +27,7 @@
                 {% for departament in departments %}
                     <option value="{{ departament.id }}">{{ departament.departament_name }}</option>
                 {% endfor %}
-            </select><br>
+            </select>
         </div>
 
         <div class="filter-row">
@@ -37,7 +37,7 @@
             <input type="date" name="end-date">
         </div>
 
-        <div class="filter-row">
+        <div class="">
             <input class="submit" type="submit" value="Применить">
         </div>
         </form>
@@ -88,6 +88,8 @@
             {% endfor %}];
     {% endif %}
 
+    const y_scale_max = {{ y_scale_max }}
+
 
 
     const ctx = document.getElementById('chart').getContext('2d');
@@ -121,7 +123,7 @@
         scales: {
           y: {
             beginAtZero: true,
-            max: {{ y_scale_max }},
+            max: y_scale_max,
             title: {
               display: true,
               text: yLegend,

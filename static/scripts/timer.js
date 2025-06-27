@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function() {
     const timerContainer = document.getElementById('timer');
     const updateTimer = function() {
@@ -11,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
         else {
             timerContainer.textContent = '0:0';
         }
-
     }
     updateTimer();
     setInterval(updateTimer, 1000);

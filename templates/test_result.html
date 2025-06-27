@@ -13,7 +13,7 @@
         <div class="result-summary">
             <span class="worker">Тестируемый: {{ user_answers.0.worker.full_name }}</span><br>
             <span class="departament">Подразделение: {{ user_answers.0.worker.departament }}</span><br>
-            <span class="test">Тест: {{ test.test_name }}</span><br>
+            <span class="test">Тест: <a href="/testing/{{ test.id }}">{{ test.test_name }}</a></span><br>
             <span>Набрано баллов: {{ score }} из {{ max_score }}</span><br>
             <span>Дата прохождения: Дата прохождения: {{ result.finish_date|date:"d.m.Y" }}</span><br>
                 <span>Затраченное время: {{ time_spent }}</span><br>

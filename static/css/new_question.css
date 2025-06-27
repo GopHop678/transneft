@@ -20,6 +20,19 @@
             margin: 15px;
         }
 
+        .return {
+            font-size: 17px;
+
+            a {
+                text-decoration: underline;
+                color: black;
+            }
+            a:hover {
+                text-decoration: underline;
+                color: red;
+            }
+        }
+
         .question-form {
             margin: 15px;
             display: grid;
@@ -84,4 +97,25 @@
     background: rgb(56%, 99%, 69%, 1);
     position: relative;
     bottom: 80px;
+}
+
+
+@media (max-width: 700px) {
+    .new-question-content {
+        .new-question-wrapper {
+            max-width: 90vw;
+        }
+    }
+
+    input {
+        max-width: 35vw !important;
+    }
+
+    p {
+        text-align: center;
+    }
+
+    .media {
+        width: 80vw !important;
+    }
 }

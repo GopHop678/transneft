@@ -1,17 +1,16 @@
-.test-protocols-content {
+.test-attempts-content {
     .intro {
         margin: 1%;
         font-size: 18px;
     }
-    .test-protocols-wrapper {
+    .test-attempts-wrapper {
         margin: 1%;
         position: relative;
         display: grid;
         grid-template-columns: 33.3% 33.3% 33.3%;
 
-        .worker-protocol {
+        .test-attempt {
             margin: 10px;
-            padding-bottom: 20px;
             border: solid rgba(0, 0, 0, 0.8) 1px;
             border-radius: 30px;
             position: relative;
@@ -21,19 +20,10 @@
             a {
                 position: relative;
                 width: 80%;
-                margin: 0 auto;
+                margin: 10px auto;
                 display: block;
                 color: black;
                 text-decoration: none;
-
-                .worker {
-                    font-size: 18px;
-                    margin-bottom: 5px;
-                }
-                .departament {
-                    font-size: 18px;
-                    margin-top: 0;
-                }
             }
             a:hover {
                 color: red;
@@ -45,14 +35,9 @@
 
 
 @media (max-width: 700px) {
-    .test-protocols-content {
-        .test-protocols-wrapper {
-            grid-template-columns: 100%;
-            place-items: center;
-
-            .worker-protocol {
-                width: 90%;
-            }
+    .test-attempts-content {
+        .test-attempts-wrapper {
+            grid-template-columns: 50% 50%;
         }
     }
 }

@@ -19,6 +19,7 @@
 
     <div class="new-question-wrapper">
         <p>Создание вопроса для теста</p>
+        <p class="return"><a href="/testing/{{ test.id }}"><< На страницу теста</a></p>
         <div id="constructor-container">
             <form class="question-form" action="" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -27,7 +28,7 @@
 
                 <label>Добавьте фото или видео к вопросу</label><br>
                 <input class="file-input" type="file" name="file"
-                       accept="image/png, image/jpeg, image/gif, video/*, audio/*" multiple><br>
+                       accept="image/png, image/jpeg, image/gif, image/webp, video/*, audio/*" multiple><br>
 
                 <label>Тип вопроса</label><br>
                 <select name="question-type" id="question-type-select">

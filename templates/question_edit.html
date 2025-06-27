@@ -27,7 +27,7 @@
 
                 <label>Добавьте фото или видео к вопросу</label><br>
                 <input class="file-input" type="file" name="file"
-                       accept="image/png, image/jpeg, image/gif, video/*, audio/*" multiple><br>
+                       accept="image/png, image/jpeg, image/gif, image/webp, video/*, audio/*" multiple><br>
 
                 {% for file in media_files %}
                     {% if file.file_type == 'img' %}
@@ -79,7 +79,7 @@
 <script>
     const audio = document.getElementById('audio');
     const video = document.getElementById('video');
-    audio.volume = 0.2;
     video.volume = 0.2;
+    audio.volume = 0.2;
 </script>
 {% endblock %}

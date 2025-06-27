@@ -1,0 +1,25 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block title %} Предыдущие попытки {% endblock %}
+
+{% block styles %}
+    <link href="{% static '/css/test_attempts.css' %}" rel="stylesheet">
+{% endblock styles %}
+
+{% block body %}
+<div class="test-attempts-content">
+    <p class="intro">Предыдущие попытки</p>
+    <div class="test-attempts-wrapper">
+        {% for result in results %}
+            <div class="test-attempt">
+                <a href="/testing/{{ result.test.id }}/results/{{ result.id }}">
+                    <span class="result">Набрано баллов: {{ result.result }}</span><br>
+                    <span>Дата прохождения: {{ result.finish_date|date:"d.m.Y" }}</span><br>
+                    <span>Тест пройден: {% if result.is_passed %}Да{% else %}Нет{% endif %}</span><br>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

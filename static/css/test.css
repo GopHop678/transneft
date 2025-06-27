@@ -48,6 +48,10 @@
                     display: grid;
                     grid-template-columns: 50% 50%;
                 }
+
+                .previous-attempts {
+                    width: 440px;
+                }
             }
 
             .questions-wrapper {
@@ -95,6 +99,32 @@
                     color: black;
                 }
             }
+        }
+    }
+}
+
+
+@media (max-width: 700px) {
+    .test-content {
+        .test-wrapper {
+            width: 90vw;
+
+            a {
+                width: 90% !important;
+            }
+            .previous-attempts {
+                width: 95% !important;
+            }
+
+            .questions-wrapper{
+                .question-wrapper {
+                    width: 100%;
+                    grid-template-columns: 90% 10%;
+                }
+                a {
+                    width: 80vw;
+                }
             }
         }
+    }
 }

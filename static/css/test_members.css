@@ -5,11 +5,32 @@
     .members-filter-form {
         text-align: center;
         width: 100%;
-        padding-top: 15px;
-        padding-bottom: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
         margin-bottom: 10px;
         border-bottom: solid black 1px;
         background: rgba(194, 199, 200, 1);
+
+        input, label, select {
+            margin: 5px;
+        }
+    }
+
+    .return {
+        height: 17px;
+        margin: 0;
+        font-size: 17px;
+
+        a {
+            position: fixed;
+            left: 20px;
+            text-decoration: underline;
+            color: black;
+        }
+        a:hover {
+            text-decoration: underline;
+            color: red;
+        }
     }
 
     .members-table {
@@ -19,6 +40,25 @@
 
         th, td {
             border: solid grey 1px;
+        }
+    }
+}
+
+
+@media (max-width: 700px) {
+    .test-members-content {
+        .members-filter-form {
+            display: grid;
+            grid-template-columns: 50% 50%;
+
+            input, label, select {
+                margin: 5px;
+            }
+
+            .submit-btn {
+                position: relative;
+                left: 27vw;
+            }
         }
     }
 }

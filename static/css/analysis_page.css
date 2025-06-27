@@ -18,14 +18,33 @@
             label, input, select {
                 margin: 5px 5px 5px;
             }
-
-            .submit {
-                background: rgb(56%, 99%, 69%, 1);
-            }
+        }
+        .submit {
+            background: rgb(56%, 99%, 69%, 1);
         }
     }
 
     canvas {
 
+    }
+}
+
+
+@media (max-width: 700px) {
+    .analysis-content {
+        .filter {
+            padding: 5px;
+            background: rgba(194, 199, 200, 1);
+
+            .filter-row {
+                display: grid;
+                width: 100%;
+                grid-template-columns: 50% 50%;
+            }
+
+            .submit {
+                background: rgb(56%, 99%, 69%, 1);
+            }
+        }
     }
 }

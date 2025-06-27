@@ -56,8 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 answersContainer.appendChild(document.createElement('br'));
             })
             constructorContainer.appendChild(addNewBtn);
-
-
+            
             for (let i = 1; i <= 4; i++) {
                 // labels
                 const labelAnswer = document.createElement('label');

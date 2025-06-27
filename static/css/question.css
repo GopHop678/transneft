@@ -6,7 +6,7 @@
         display: grid;
         place-items: center;
         margin: 15px;
-        min-width: 500px;
+        width: 500px;
         border: solid rgba(0, 0, 0, 0.8) 1px;
         border-radius: 30px;
         box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
@@ -14,15 +14,16 @@
         .question-entry-wrapper {
             max-width: 500px;
             margin: 15px;
-            padding: 10px;
+            padding-top: 10px;
             font-size: 24px;
             display: grid;
             place-items: center;
+            text-align: center;
 
             .media {
                 margin-top: 15px;
                 max-height: 500px;
-                max-width: 500px;
+                max-width: 100%;
             }
         }
 
@@ -71,4 +72,36 @@ box-shadow: 0px -10px 20px -3px rgba(0, 0, 0, 0.3) inset, 0px 10px 20px -3px rgb
     border-radius: 15px;
     background: rgba(255, 253, 150, 1);
     margin: 30px;
+}
+
+
+@media (max-width: 700px) {
+    .question-content {
+        .question-wrapper {
+            width: 90vw;
+
+            .question-entry-wrapper {
+                text-align: center;
+
+                .media {
+                    width: 80vw;
+                }
+            }
+
+            .answers-wrapper {
+                width: 100%;
+
+                form {
+                    .form-answers-wrapper {
+                        display: grid;
+                        grid-template-columns: 50% 50%;
+
+                        input, label, select {
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
