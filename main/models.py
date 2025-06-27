@@ -37,6 +37,8 @@ class Test(models.Model):
     test_description = models.CharField(max_length=1000, null=True, blank=True,
                                         default='Описание отсутствует')
     curator = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    max_tries = models.IntegerField(null=True, default=2)
+    questions_per_attempt = models.IntegerField(null=True, default=10)
     time_limit = models.IntegerField(null=True, default=20)
     percentage_to_pass = models.IntegerField(null=True, default=80)
 
@@ -122,7 +124,15 @@ class Result(models.Model):
     finish_date = models.DateTimeField(null=True)
 
     def __str__(self):
-        return f'{self.test} - {self.worker.full_name}'
+        return f'{self.id} {self.test} - {self.worker.full_name}'
+
+
+class AttemptQuestion(models.Model):
+    result = models.ForeignKey(Result, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.result} - {self.question}'
 
 
 class UserAnswer(models.Model):

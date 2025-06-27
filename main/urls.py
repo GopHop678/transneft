@@ -21,10 +21,13 @@ urlpatterns = [
     path('testing/<int:test_id>/<int:question_id>/edit', question_edit_view, name='edit_question'),
     path('testing/<int:test_id>/<int:question_id>/delete', delete_question, name='delete_question'),
     path('testing/<int:test_id>/new_question', new_question_view, name='new_question'),
-    path('testing/<int:test_id>/results', test_result, name='test_result'),
+    path('testing/<int:test_id>/results', test_attempts, name='test_attempts'),
+    path('testing/<int:test_id>/results/<int:result_id>', test_result, name='test_result'),
     path('testing/files/<int:file_id>/delete', delete_file, name='delete_file'),
     path('testing/new', new_test_view, name='new_test'),
     path('login', user_login, name='login'),
     path('logout', user_logout, name='logout'),
     path('download_pdf/<int:test_id>/<int:result_id>', form_protocol_file, name='download_pdf'),
 ]
+
+# [0] -> [-1]

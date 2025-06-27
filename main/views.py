@@ -17,7 +17,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from .models import Worker, Departament, Test, TestMember, UploadedFile, \
-    Question, AnswerOpen, AnswerPair, AnswerVariant, Result, UserAnswer
+    Question, AnswerOpen, AnswerPair, AnswerVariant, Result, UserAnswer, AttemptQuestion
 
 
 def get_role(user):
@@ -159,7 +159,6 @@ def tests_view(request):
         tests = tests.order_by('test_name')
         if role == 'curator':
             tests = list(set(list(tests) + list(Test.objects.filter(curator=worker))))
-
     return render(request, 'testing.html', {
         'tests': tests,
     })
@@ -171,6 +170,7 @@ def test_detailed(request, test_id):
     test_members = TestMember.objects.filter(test__id=test_id)
     test_members = [i.worker for i in test_members]
     test = Test.objects.get(id=test_id)
+    results = Result.objects.filter(test=test, worker=worker)
     role = get_role(request.user)
     if role in ['admin']:
         pass
@@ -186,6 +186,7 @@ def test_detailed(request, test_id):
     return render(request, 'test_detailed.html', {
         'test': test,
         'questions': questions,
+        'results': results,
     })
 
 
@@ -205,6 +206,7 @@ def protocols_view(request):
             'tests': tests,
             'messages': ['Вы не являетесь куратором ни одного теста'],
         })
+    tests = tests.order_by('test_name')
     return render(request, 'protocols.html', {
         'tests': tests,
     })
@@ -234,6 +236,23 @@ def test_protocols_view(request, test_id):
 
 
 @login_required(login_url='login')
+def test_attempts(request, test_id):
+    worker = Worker.objects.get(user=request.user)
+    test = Test.objects.get(id=test_id)
+    results = Result.objects.filter(test=test, worker=worker, finish_date__isnull=False)
+    if not results.exists():
+        return render(request, '403.html', {'messages': ['Вы не участвуете в данном тестировании']})
+
+    results = results.order_by('test__test_name')
+    for result in results:
+        result.result = int(result.result) if round(result.result, 5) ==\
+                                                  int(result.result) else round(result.result, 5)
+    return render(request, 'test_attempts.html', {
+        'results': results,
+    })
+
+
+@login_required(login_url='login')
 def worker_protocol(request, test_id, result_id):
     role = get_role(request.user)
     worker = Worker.objects.get(user=request.user)
@@ -247,7 +266,10 @@ def worker_protocol(request, test_id, result_id):
         return render(request, '403.html', {'messages': ['В доступе отказано']})
 
     result = Result.objects.get(id=result_id)
-    test_questions = Question.objects.filter(test__id=test_id)
+    attempt_questions = AttemptQuestion.objects.filter(result=result).values_list('question', flat=True)
+    test_questions = Question.objects.filter(id__in=attempt_questions, test__id=test_id)
+    if not test_questions.exists():  # old tests compatibility
+        test_questions = Question.objects.filter(test__id=test_id)
     variants = AnswerVariant.objects.filter(question__test__id=test_id, is_correct=True)
     pairs = AnswerPair.objects.filter(question__test__id=test_id).order_by('left_part')
     open_answer = AnswerOpen.objects.filter(question__test__id=test_id)
@@ -288,21 +310,35 @@ def start_test(request, test_id):
 
     result = Result.objects.filter(worker=worker, test__id=test_id)
     test = Test.objects.get(id=test_id)
-    test_questions = Question.objects.filter(test=test)
+    test_questions = list(Question.objects.filter(test=test))
+    random.shuffle(test_questions)
+    test_questions = test_questions[:test.questions_per_attempt]
+
     current_time = datetime.datetime.now(datetime.timezone.utc)
     if result.exists():
-        if result[0].finish_date:
-            return redirect('test_result', test_id=test_id)
-        else:
+        if result.last().finish_date:
+            if len(result) >= test.max_tries:
+                return redirect('test_attempts', test_id=test_id)
+            else:
+                new_result_obj = Result(test=test, worker=worker, start_date=current_time)
+                new_result_obj.save()
+                for test_question in test_questions:
+                    attempt_question = AttemptQuestion(result=new_result_obj, question=test_question)
+                    attempt_question.save()
+        else:  # redirect to last answered question
+            attempt_questions = AttemptQuestion.objects.filter(result=result.last())
             user_answers = UserAnswer.objects.filter(
-                question__test=test, worker=worker
+                result=result.last()
             ).values_list('question')  # get questions ids for the test
-            last_question = test_questions[len(set(user_answers))]
-            return redirect('question', test_id=test_id, question_id=last_question.id)
+            last_question = attempt_questions[len(set(user_answers))]
+            return redirect('question', test_id=test_id, question_id=last_question.question.id)
 
     if not result.exists():
         new_result_obj = Result(test=test, worker=worker, start_date=current_time)
         new_result_obj.save()
+        for test_question in test_questions:
+            attempt_question = AttemptQuestion(result=new_result_obj, question=test_question)
+            attempt_question.save()
     return redirect('question', test_id=test_id, question_id=test_questions[0].id)
 
 
@@ -324,16 +360,18 @@ def practice_start(request, test_id):
 
 @login_required(login_url='login')
 def question_view(request, test_id, question_id):
-    is_started = Result.objects.filter(worker__user=request.user, test__id=test_id).exists()
-    if not is_started:
+    worker = Worker.objects.get(user=request.user)
+    test = Test.objects.get(id=test_id)
+    results = Result.objects.filter(worker=worker, test=test)
+    current_result = results.last()
+
+    if not results.exists():
         return render(request, '403.html', {
             'messages': ['Вы не участвуете в данном тестировании']
         })
 
-    worker = Worker.objects.get(user=request.user)
-    result = Result.objects.filter(worker=worker, test__id=test_id)
-    if result.exists():
-        if result[0].finish_date:
+    if results.exists():
+        if current_result.finish_date:
             return render(request, '403.html', {
                 'messages': ['Вы уже прошли данный тест']
             })
@@ -341,7 +379,7 @@ def question_view(request, test_id, question_id):
     def fill_answer(q, w, a=None, left=None, right=None):
         if a:
             user_answer_obj, created = UserAnswer.objects.get_or_create(
-                result=result[0],
+                result=current_result,
                 question=q,
                 worker=w,
                 left_part=None,
@@ -351,7 +389,7 @@ def question_view(request, test_id, question_id):
             user_answer_obj.save()
         elif left:
             user_answer_obj, created = UserAnswer.objects.get_or_create(
-                result=result[0],
+                result=current_result,
                 question=q,
                 worker=w,
                 simple_answer=None,
@@ -360,10 +398,14 @@ def question_view(request, test_id, question_id):
             user_answer_obj.right_part = right
             user_answer_obj.save()
 
-    test = Test.objects.get(id=test_id)
-    question = Question.objects.get(id=question_id)
+    try:
+        question = AttemptQuestion.objects.get(question__id=question_id, result=current_result).question
+    except:
+        return render(request, '403.html', {
+            'messages': ['Такой объект не существует']
+        })
     media_files = UploadedFile.objects.filter(question=question)
-    start_time = Result.objects.get(worker__user=request.user, test__id=test_id).start_date
+    start_time = current_result.start_date
     start_time = start_time
     test_time_limit = datetime.timedelta(minutes=test.time_limit)
     end_before = start_time + test_time_limit
@@ -405,13 +447,15 @@ def question_view(request, test_id, question_id):
             answer_value = request.POST['user-answer']
             fill_answer(q=question, w=worker, a=answer_value)
 
-        questions = Question.objects.filter(test=test)
-        questions_id_list = [i.id for i in questions]
+        questions = AttemptQuestion.objects.filter(result=current_result)
+        questions_id_list = [i.question.id for i in questions]
         try:
-            index_of_next_question = questions_id_list.index(question_id) + 1
-            return redirect('question', test_id=test_id, question_id=questions[index_of_next_question].id)
+            index_of_next_question = questions_id_list.index(question.id) + 1
+            return redirect('question',
+                            test_id=test_id,
+                            question_id=questions[index_of_next_question].question.id)
         except IndexError:
-            return redirect('test_result', test_id=test_id)
+            return redirect('test_result', test_id=test_id, result_id=current_result.id)
 
     return render(request, 'question.html', {
         'question': question,
@@ -450,11 +494,12 @@ def practice_question_view(request, test_id, question_id):
     random.shuffle(answers)
 
     if request.method == 'POST':
-        questions = Question.objects.filter(test=test)
+        questions = Question.objects.filter(test=test)[:5]
         questions_id_list = [i.id for i in questions]
         try:
             index_of_next_question = questions_id_list.index(question_id) + 1
-            return redirect('practice_question', test_id=test_id, question_id=questions[index_of_next_question].id)
+            return redirect('practice_question',
+                            test_id=test_id, question_id=questions[index_of_next_question].id)
         except IndexError:
             return redirect('test', test_id=test_id)
 
@@ -508,7 +553,7 @@ def question_edit_view(request, test_id, question_id):
         uploaded_files = request.FILES.getlist('file')
         if uploaded_files:
             for media_file in uploaded_files:
-                if media_file.content_type in ['image/png', 'image/jpeg', 'image/gif']:
+                if media_file.content_type in ['image/png', 'image/jpeg', 'image/gif', 'image/webp']:
                     new_file = UploadedFile(question=question, file_type='img', file=media_file)
                     new_file.save()
                 elif 'video' in media_file.content_type:
@@ -681,7 +726,7 @@ def new_question_view(request, test_id):
         uploaded_files = request.FILES.getlist('file')
         if uploaded_files:
             for media_file in uploaded_files:
-                if media_file.content_type in ['image/png', 'image/jpeg', 'image/gif']:
+                if media_file.content_type in ['image/png', 'image/jpeg', 'image/gif', 'image/webp']:
                     new_file = UploadedFile(question=new_question_obj, file_type='img', file=media_file)
                     new_file.save()
                 elif 'video' in media_file.content_type:
@@ -745,25 +790,29 @@ def new_question_view(request, test_id):
         return redirect('test', test_id=test_id)
 
     return render(request, 'new_question.html', {
+        'test': test,
         'question_types': question_types,
     })
 
 
 @login_required(login_url='login')
-def test_result(request, test_id):
+def test_result(request, test_id, result_id):
     test_score = 0
     max_score = 0
     worker = Worker.objects.get(user=request.user)
     test = Test.objects.get(id=test_id)
-    result_is_exists = Result.objects.filter(worker=worker, test=test).exists()
-    if not result_is_exists:
+    user_results = Result.objects.filter(worker=worker, test=test)
+    if not user_results.exists():
         return render(request, '403.html', {'messages': ['Вы не участвуете в данном тестировании']})
     curator = test.curator
-    user_result = Result.objects.get(worker=worker, test=test)
-    test_questions = Question.objects.filter(test__id=test_id)
-    variants = AnswerVariant.objects.filter(question__test__id=test_id, is_correct=True)
-    pairs = AnswerPair.objects.filter(question__test__id=test_id).order_by('left_part')
-    open_answer = AnswerOpen.objects.filter(question__test__id=test_id)
+    current_result = Result.objects.get(id=result_id)
+    attempt_questions = AttemptQuestion.objects.filter(result=current_result).values_list('question', flat=True)
+    test_questions = Question.objects.filter(id__in=attempt_questions, test__id=test_id)
+    if not test_questions.exists():  # old tests compatibility
+        test_questions = Question.objects.filter(test=test)
+    variants = AnswerVariant.objects.filter(question__test=test, is_correct=True)
+    pairs = AnswerPair.objects.filter(question__test=test).order_by('left_part')
+    open_answer = AnswerOpen.objects.filter(question__test=test)
     test_questions = test_questions.prefetch_related(
         Prefetch('answervariant_set', queryset=variants, to_attr='variants')
     )
@@ -774,7 +823,7 @@ def test_result(request, test_id):
         Prefetch('answeropen_set', queryset=open_answer, to_attr='open_answer')
     )
 
-    user_answers = UserAnswer.objects.filter(question__test=test, worker=worker)
+    user_answers = UserAnswer.objects.filter(question__test=test, worker=worker, result=current_result)
     user_answers = user_answers.order_by('left_part')
 
     for question in test_questions:
@@ -796,13 +845,13 @@ def test_result(request, test_id):
                     test_score += 1
 
     test_score = int(test_score) if round(test_score, 5) == int(test_score) else round(test_score, 5)
-    user_result.result = test_score
+    current_result.result = test_score
     test_is_passed = True if (test_score / max_score * 100) >= test.percentage_to_pass else False
     if test_is_passed:
-        user_result.is_passed = True
-        user_result.save()
+        current_result.is_passed = True
+        current_result.save()
 
-    if not user_result.finish_date:
+    if not current_result.finish_date:
         send_mail(
             f'Тестируемый {worker.full_name} закончил тест.',
             f'Набрано {test_score} из {max_score} \n'
@@ -811,12 +860,12 @@ def test_result(request, test_id):
             fail_silently=False,
             from_email=None
         )
-        user_result.finish_date = datetime.datetime.now(datetime.timezone.utc)
-    user_result.save()
-    time_spent = user_result.finish_date - user_result.start_date
+        current_result.finish_date = datetime.datetime.now(datetime.timezone.utc)
+    current_result.save()
+    time_spent = current_result.finish_date - current_result.start_date
 
     return render(request, 'test_result.html', {
-        'result': user_result,
+        'result': current_result,
         'test': test,
         'time_spent': f'{time_spent.seconds//3600}:{time_spent.seconds//60%60}:{time_spent.seconds%60}',
         'score': test_score,
@@ -849,12 +898,52 @@ def new_test_view(request):
 
         if test_name:
             test_description = request.POST.get('test-description')
-            percentage_to_pass = int(request.POST.get('percentage-to-pass'))
-            time_limit = int(request.POST.get('time-limit'))
+            percentage_to_pass = request.POST.get('percentage-to-pass')
+            time_limit = request.POST.get('time-limit')
+            max_tries = request.POST.get('max-attempts')
+            questions_per_attempt = request.POST.get('questions-per-attempt')
+
+            try:
+                if percentage_to_pass != '':
+                    percentage_to_pass = int(percentage_to_pass)
+                else:
+                    percentage_to_pass = Test._meta.get_field('percentage_to_pass').default
+            except ValueError:
+                return render(request, 'test_edit.html', {'messages': ['Неверный формат полей']})
+
+            try:
+                if time_limit != '':
+                    time_limit = int(time_limit)
+                else:
+                    time_limit = Test._meta.get_field('time_limit').default
+            except ValueError:
+                return render(request, 'test_edit.html', {'messages': ['Неверный формат полей']})
+
+            try:
+                if max_tries != '':
+                    max_tries = int(max_tries)
+                else:
+                    max_tries = Test._meta.get_field('max_tries').default
+            except ValueError:
+                return render(request, 'test_edit.html', {'messages': ['Неверный формат полей']})
+
+            try:
+                if questions_per_attempt != '':
+                    questions_per_attempt = int(questions_per_attempt)
+                else:
+                    questions_per_attempt = Test._meta.get_field('questions_per_attempt').default
+            except ValueError:
+                return render(request, 'test_edit.html', {'messages': ['Неверный формат полей']})
+
             curator = Worker.objects.get(user=request.user)
             new_test = Test(
-                test_name=test_name, test_description=test_description, curator=curator,
-                time_limit=time_limit, percentage_to_pass=percentage_to_pass
+                test_name=test_name,
+                test_description=test_description,
+                curator=curator,
+                time_limit=time_limit,
+                percentage_to_pass=percentage_to_pass,
+                max_tries=max_tries,
+                questions_per_attempt=questions_per_attempt,
             )
             new_test.save()
             new_test_member = TestMember(test=new_test, worker=curator)
@@ -869,6 +958,8 @@ def new_test_view(request):
                     test_description = headers[1]
                     time_limit = headers[2]
                     percentage_to_pass = headers[3]
+                    max_tries = headers[4]
+                    questions_per_attempt = headers[5]
 
                     curator = Worker.objects.get(user=request.user)
                     new_test = Test(
@@ -876,7 +967,9 @@ def new_test_view(request):
                         test_description=test_description,
                         curator=curator,
                         percentage_to_pass=percentage_to_pass,
-                        time_limit=time_limit
+                        time_limit=time_limit,
+                        max_tries=max_tries,
+                        questions_per_attempt=questions_per_attempt
                     )
                     new_test.save()
                     new_test_member = TestMember(test=new_test, worker=curator)
@@ -927,6 +1020,8 @@ def test_edit_view(request, test_id):
         test_description = request.POST.get('test-description')
         time_limit = request.POST.get('time-limit')
         percentage_to_pass = request.POST.get('percentage-to-pass')
+        max_tries = request.POST.get('max-attempts')
+        questions_per_attempt = request.POST.get('questions-per-attempt')
         if test_name == '':
             return render(request, 'test_edit.html', {
                 'test': test,
@@ -942,10 +1037,34 @@ def test_edit_view(request, test_id):
                 'test': test,
                 'messages': ['Укажите необходимый процент правильных ответов для прохождения теста'],
             })
+        if max_tries == '':
+            return render(request, 'test_edit.html', {
+                'test': test,
+                'messages': ['Укажите количество попыток на тест'],
+            })
+        if questions_per_attempt == '':
+            return render(request, 'test_edit.html', {
+                'test': test,
+                'messages': ['Укажите количество вопросов в тесте'],
+            })
+
+        try:
+            time_limit = int(request.POST.get('time-limit'))
+            percentage_to_pass = int(request.POST.get('percentage-to-pass'))
+            max_tries = int(request.POST.get('max-attempts'))
+            questions_per_attempt = int(request.POST.get('questions-per-attempt'))
+        except ValueError:
+            return render(request, 'test_edit.html', {
+                'test': test,
+                'messages': ['Неверный формат полей'],
+            })
+
         test.test_name = test_name
         test.test_description = test_description
-        test.time_limit = int(time_limit)
-        test.percentage_to_pass = int(percentage_to_pass)
+        test.time_limit = time_limit
+        test.percentage_to_pass = percentage_to_pass
+        test.max_tries = max_tries
+        test.questions_per_attempt = questions_per_attempt
         test.save()
         return redirect('test', test_id=test.id)
     return render(request, 'test_edit.html', {
@@ -1015,6 +1134,7 @@ def test_members_view(request, test_id):
                 workers = filtered_workers
     workers = sorted(workers, key=lambda x: x.full_name)
     return render(request, 'test_members.html', {
+        'test': test,
         'workers': workers,
         'departments': departments,
     })
@@ -1061,8 +1181,17 @@ def analysis_view(request):
                 results = Result.objects.filter(
                     test=chosen_test,
                     worker__departament__id=chosen_departament_id)
-                results = results.filter(start_date__gt=start_date) if start_date != '' else results
+                results = results.filter(finish_date__gt=start_date) if start_date != '' else results
                 results = results.filter(finish_date__lt=end_date) if end_date != '' else results
+                results = results.order_by('worker__full_name', '-result')
+
+                workers = []
+                result_w_max_score = []
+                for i in results:
+                    if i.worker not in workers:
+                        result_w_max_score.append(i)
+                        workers.append(i.worker)
+                results = result_w_max_score
 
             elif chosen_departament_id == '':
                 for departament in departments:
