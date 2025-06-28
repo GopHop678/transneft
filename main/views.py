@@ -52,7 +52,8 @@ def form_protocol_file(request, test_id, result_id):
         return render(request, '403.html', {'messages': ['В доступе отказано']})
 
     result = Result.objects.get(id=result_id)
-    test_questions = Question.objects.filter(test=test)
+    attempt_questions = AttemptQuestion.objects.filter(result=result).values_list('question', flat=True)
+    test_questions = Question.objects.filter(id__in=attempt_questions, test__id=test_id)
     variants = AnswerVariant.objects.filter(question__test=test, is_correct=True)
     pairs = AnswerPair.objects.filter(question__test=test)
     open_answer = AnswerOpen.objects.filter(question__test=test)
