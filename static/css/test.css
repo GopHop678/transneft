@@ -116,6 +116,14 @@
                 width: 95% !important;
             }
 
+            .test-info {
+                a {
+                    @media (max-width: 500px) {
+                        font-size: 3.7vw;
+                    }
+                }
+            }
+
             .questions-wrapper{
                 .question-wrapper {
                     width: 100%;

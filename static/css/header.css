@@ -31,7 +31,8 @@ margin: 0;
         display: flex;
         flex-wrap: wrap;
         div {
-            min-width: 150px;
+            /*min-width: 150px;*/
+            width: 11.5vw;
             margin: 5px 15px 5px;
             a {
                 width: 100%;
@@ -40,7 +41,7 @@ margin: 0;
                 border: 1px solid rgba(70, 70, 70, 1);
                 border-radius: 15px;
                 padding: 5px;
-                font-size: 18px;
+                font-size: 1.55vw;
                 color: black;
                 text-decoration: none;
                 font-family: sans-serif;
