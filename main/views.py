@@ -54,6 +54,8 @@ def form_protocol_file(request, test_id, result_id):
     result = Result.objects.get(id=result_id)
     attempt_questions = AttemptQuestion.objects.filter(result=result).values_list('question', flat=True)
     test_questions = Question.objects.filter(id__in=attempt_questions, test__id=test_id)
+    if not test_questions.exists():  # old tests compatibility
+        test_questions = Question.objects.filter(test=test)
     variants = AnswerVariant.objects.filter(question__test=test, is_correct=True)
     pairs = AnswerPair.objects.filter(question__test=test)
     open_answer = AnswerOpen.objects.filter(question__test=test)
@@ -494,9 +496,13 @@ def practice_question_view(request, test_id, question_id):
     random.shuffle(right_parts) if right_parts else None
     random.shuffle(answers)
 
+    questions = Question.objects.filter(test=test)[:5]
+    questions_id_list = [i.id for i in questions]
+    if question_id not in questions_id_list:
+        return render(request, '403.html', {
+            'messages': ['Такой объект не существует']
+        })
     if request.method == 'POST':
-        questions = Question.objects.filter(test=test)[:5]
-        questions_id_list = [i.id for i in questions]
         try:
             index_of_next_question = questions_id_list.index(question_id) + 1
             return redirect('practice_question',
@@ -753,6 +759,12 @@ def new_question_view(request, test_id):
                     answer_keys.append(key)
 
             for i, answer in enumerate(answer_keys):
+                if form_dict[answer][0] == '':
+                    return render(request, 'new_question.html', {
+                        'test': test,
+                        'question_types': question_types,
+                        'messages': ['Пустые поля недопустимы'],
+                    })
                 new_answer_obj = AnswerVariant(
                     question=new_question_obj,
                     answer_text=form_dict[answer][0],
@@ -772,6 +784,13 @@ def new_question_view(request, test_id):
                     rights.append(form_dict[key][0])
 
             for left, right in zip(lefts, rights):
+                if left == '' or right == '':
+                    return render(request, 'new_question.html', {
+                        'test': test,
+                        'question_types': question_types,
+                        'messages': ['Пустые поля недопустимы'],
+                    })
+
                 new_pair_obj = AnswerPair(
                     question=new_question_obj,
                     left_part=left,
@@ -781,6 +800,12 @@ def new_question_view(request, test_id):
 
         elif question_type == 'open':
             correct_answer = form_dict['open'][0]
+            if correct_answer == '':
+                return render(request, 'new_question.html', {
+                    'question_types': question_types,
+                    'test': test,
+                    'messages': ['Пустые поля недопустимы'],
+                })
 
             new_open_obj = AnswerOpen(
                 question=new_question_obj,
