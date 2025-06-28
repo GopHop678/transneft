@@ -1199,7 +1199,7 @@ def analysis_view(request):
                     data = Result.objects.filter(
                         test=chosen_test,
                         worker__departament=departament)
-                    data = data.filter(start_date__gt=start_date) if start_date != '' else data
+                    data = data.filter(finish_date__gt=start_date) if start_date != '' else data
                     data = data.filter(finish_date__lt=end_date) if end_date != '' else data
 
                     departament_avg_score = 0
@@ -1279,7 +1279,7 @@ def summary_view(request):
                         filtered_results.append(result)
                 results = filtered_results
 
-            results = results.filter(start_date__gt=start_date) if start_date != '' else results
+            results = results.filter(finish_date__gt=start_date) if start_date != '' else results
             results = results.filter(finish_date__lt=end_date) if end_date != '' else results
 
     return render(request, 'summary.html', {
