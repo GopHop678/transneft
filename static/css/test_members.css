@@ -22,7 +22,7 @@
         font-size: 17px;
 
         a {
-            position: fixed;
+            position: absolute;
             left: 20px;
             text-decoration: underline;
             color: black;
