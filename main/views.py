@@ -68,15 +68,15 @@ def form_protocol_file(request, test_id, result_id):
     test_questions = test_questions.prefetch_related(
         Prefetch('answeropen_set', queryset=open_answer, to_attr='open_answer')
     )
-    user_answers = UserAnswer.objects.filter(question__test=test, worker=result.worker)
+    user_answers = UserAnswer.objects.filter(question__test=test, result=result)
     max_score = len(test_questions)
 
     buffer = io.BytesIO()
     time_spent = result.finish_date - result.start_date
     result_score = int(result.result) if round(result.result, 5) == int(result.result) \
         else round(result.result, 5)
-    header = f'''Тестируемый: {user_answers[0].worker.full_name}
-Подразделение: {user_answers[0].worker.departament}
+    header = f'''Тестируемый: {user_answers[0].result.worker.full_name}
+Подразделение: {user_answers[0].result.worker.departament}
 Тест: {test_questions[0].test.test_name}
 Набрано баллов: {result_score}
 Максимум баллов: {max_score}
@@ -285,7 +285,7 @@ def worker_protocol(request, test_id, result_id):
     test_questions = test_questions.prefetch_related(
         Prefetch('answeropen_set', queryset=open_answer, to_attr='open_answer')
     )
-    user_answers = UserAnswer.objects.filter(question__test=test, worker=result.worker)
+    user_answers = UserAnswer.objects.filter(question__test=test, result=result)
     user_answers = user_answers.order_by('left_part')
 
     time_spent = result.finish_date - result.start_date
@@ -379,12 +379,11 @@ def question_view(request, test_id, question_id):
                 'messages': ['Вы уже прошли данный тест']
             })
 
-    def fill_answer(q, w, a=None, left=None, right=None):
+    def fill_answer(q, a=None, left=None, right=None):
         if a:
             user_answer_obj, created = UserAnswer.objects.get_or_create(
                 result=current_result,
                 question=q,
-                worker=w,
                 left_part=None,
                 right_part=None
             )
@@ -394,7 +393,6 @@ def question_view(request, test_id, question_id):
             user_answer_obj, created = UserAnswer.objects.get_or_create(
                 result=current_result,
                 question=q,
-                worker=w,
                 simple_answer=None,
                 left_part=left
             )
@@ -438,17 +436,17 @@ def question_view(request, test_id, question_id):
             answers_ids = [i.id for i in answers]
             answer_index = answers_ids.index(answer_value)
             user_answer = answers[answer_index].answer_text
-            fill_answer(q=question, w=worker, a=user_answer)
+            fill_answer(q=question, a=user_answer)
 
         if question_type == 'pairs':
             for i in list(request.POST)[1:]:
                 left_part = AnswerPair.objects.get(id=int(i)).left_part
                 right_part = request.POST[i]
-                fill_answer(q=question, w=worker, left=left_part, right=right_part)
+                fill_answer(q=question, left=left_part, right=right_part)
 
         if question_type == 'open':
             answer_value = request.POST['user-answer']
-            fill_answer(q=question, w=worker, a=answer_value)
+            fill_answer(q=question, a=answer_value)
 
         questions = AttemptQuestion.objects.filter(result=current_result)
         questions_id_list = [i.question.id for i in questions]
@@ -849,7 +847,7 @@ def test_result(request, test_id, result_id):
         Prefetch('answeropen_set', queryset=open_answer, to_attr='open_answer')
     )
 
-    user_answers = UserAnswer.objects.filter(question__test=test, worker=worker, result=current_result)
+    user_answers = UserAnswer.objects.filter(question__test=test, result=current_result)
     user_answers = user_answers.order_by('left_part')
 
     for question in test_questions:
@@ -932,34 +930,42 @@ def new_test_view(request):
             try:
                 if percentage_to_pass != '':
                     percentage_to_pass = int(percentage_to_pass)
+                    if percentage_to_pass > 100:
+                        return render(request, 'new_test.html', {'messages': ['Максимум 100%']})
                 else:
                     percentage_to_pass = Test._meta.get_field('percentage_to_pass').default
             except ValueError:
-                return render(request, 'test_edit.html', {'messages': ['Неверный формат полей']})
+                return render(request, 'new_test.html', {'messages': ['Неверный формат полей']})
 
             try:
                 if time_limit != '':
                     time_limit = int(time_limit)
+                    if time_limit < 1:
+                        return render(request, 'new_test.html', {'messages': ['Время > 0']})
                 else:
                     time_limit = Test._meta.get_field('time_limit').default
             except ValueError:
-                return render(request, 'test_edit.html', {'messages': ['Неверный формат полей']})
+                return render(request, 'new_test.html', {'messages': ['Неверный формат полей']})
 
             try:
                 if max_tries != '':
                     max_tries = int(max_tries)
+                    if max_tries < 1:
+                        return render(request, 'new_test.html', {'messages': ['Попыток > 0']})
                 else:
                     max_tries = Test._meta.get_field('max_tries').default
             except ValueError:
-                return render(request, 'test_edit.html', {'messages': ['Неверный формат полей']})
+                return render(request, 'new_test.html', {'messages': ['Неверный формат полей']})
 
             try:
                 if questions_per_attempt != '':
                     questions_per_attempt = int(questions_per_attempt)
+                    if questions_per_attempt < 1:
+                        return render(request, 'new_test.html', {'messages': ['Вопросов > 0']})
                 else:
                     questions_per_attempt = Test._meta.get_field('questions_per_attempt').default
             except ValueError:
-                return render(request, 'test_edit.html', {'messages': ['Неверный формат полей']})
+                return render(request, 'new_test.html', {'messages': ['Неверный формат полей']})
 
             curator = Worker.objects.get(user=request.user)
             new_test = Test(
@@ -1084,6 +1090,18 @@ def test_edit_view(request, test_id):
                 'test': test,
                 'messages': ['Неверный формат полей'],
             })
+        if time_limit < 1:
+            return render(request, 'test_edit.html', {
+                'test': test, 'messages': ['Время > 0']})
+        if percentage_to_pass > 100:
+            return render(request, 'test_edit.html', {
+                'test': test, 'messages': ['Правильных вопросов <= 100']})
+        if max_tries < 1:
+            return render(request, 'test_edit.html', {
+                'test': test, 'messages': ['Попыток > 0']})
+        if questions_per_attempt < 1:
+            return render(request, 'test_edit.html', {
+                'test': test, 'messages': ['Вопросов > 0']})
 
         test.test_name = test_name
         test.test_description = test_description
@@ -1239,10 +1257,14 @@ def analysis_view(request):
                 data = Result.objects.filter(
                     test=chosen_test,
                     worker__departament=departament)
+
                 departament_avg_score = 0
                 for result in data:
                     departament_avg_score += result.result
-                avg_scores.append(departament_avg_score)
+                if data:
+                    avg_scores.append(departament_avg_score / len(data))
+                else:
+                    avg_scores.append(0)
 
     worker_scores = [i.result for i in results]
     if avg_scores or worker_scores:

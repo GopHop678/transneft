@@ -138,10 +138,9 @@ class AttemptQuestion(models.Model):
 class UserAnswer(models.Model):
     result = models.ForeignKey(Result, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
     simple_answer = models.CharField(max_length=255, null=True)
     left_part = models.CharField(max_length=255, null=True)
     right_part = models.CharField(max_length=255, null=True)
 
     # def __str__(self):
-    #     return f'{self.question}, {self.worker}'
+    #     return f'{self.question}'
