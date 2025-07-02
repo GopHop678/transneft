@@ -28,8 +28,7 @@
         }
 
         .answers-wrapper {
-            width: 100%;
-            position: relative;
+            width: 500px;
             display: grid;
             place-items: center;
             border-top: solid rgba(0, 0, 0, 0.7) 1px;
@@ -40,6 +39,7 @@
                 place-items: center;
 
                 .form-answers-wrapper {
+                    max-width: 440px;
                     display: grid;
                     grid-template-columns: auto auto;
                     place-items: center;
@@ -47,6 +47,9 @@
 
                     input, label, select {
                         margin: 15px 5px 0px;
+                    }
+                    select {
+                        max-width: 300px;
                     }
                 }
 
