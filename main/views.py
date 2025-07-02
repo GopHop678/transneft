@@ -228,7 +228,7 @@ def test_protocols_view(request, test_id):
     else:
         return render(request, '403.html', {'messages': ['В доступе отказано']})
 
-    protocols = Result.objects.filter(test__id=test_id)
+    protocols = Result.objects.filter(test__id=test_id, finish_date__isnull=False)
     protocols = protocols.order_by('worker__full_name')
     for protocol in protocols:
         protocol.result = int(protocol.result) if round(protocol.result, 5) ==\
@@ -323,7 +323,7 @@ def start_test(request, test_id):
             if len(result) >= test.max_tries:
                 return redirect('test_attempts', test_id=test_id)
             else:
-                new_result_obj = Result(test=test, worker=worker, start_date=current_time)
+                new_result_obj = Result(test=test, worker=worker, start_date=current_time, result=0)
                 new_result_obj.save()
                 for test_question in test_questions:
                     attempt_question = AttemptQuestion(result=new_result_obj, question=test_question)
@@ -415,10 +415,10 @@ def question_view(request, test_id, question_id):
     time_now = datetime.datetime.now(datetime.timezone.utc)
 
     if time_now > end_before:
-        user_result = Result.objects.get(worker=worker, test=test)
+        user_result = Result.objects.filter(worker=worker, test=test).last()
         user_result.finish_date = time_now
         user_result.save()
-        return redirect('test_result', test_id=test_id)
+        return redirect('test_result', test_id=test_id, result_id=user_result.id)
 
     variants = AnswerVariant.objects.filter(question=question)
     pairs = AnswerPair.objects.filter(question=question)
